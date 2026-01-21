@@ -1,6 +1,6 @@
 # CS 547: Computer Vision and Image Processing
 ***Spring 2026***  
-***Author: Your Name Here***  
+***Author: Jacob Cormier***  
 ***Original Author: Dr. Michael J. Reale***  
 ***SUNY Polytechnic Institute*** 
 
