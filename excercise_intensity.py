@@ -19,6 +19,7 @@ class IntTransform(Enum):
     NEGATIVE = "Negative"
     SLICE = "Intensity Slicing"
     CONTRAST = "Contrast Stretching"
+    HISTEQ = "Histogram Equalization"
 
 def do_transform(image, chosenT):
     if chosenT == IntTransform.ORIGINAL:
@@ -42,6 +43,10 @@ def do_transform(image, chosenT):
         lut = one_inter(r)
         transform = np.clip(np.round(lut),0,255).astype("uint8")
         output = transform[image]
+    elif chosenT == IntTransform.HISTEQ:
+        output = cv2.equalizeHist(image)
+        transform = np.zeros(256, dtype="uint")
+        transform[image.flatten()] = output.flatten()
     
     return output, transform
 
@@ -89,13 +94,13 @@ def main():
     print(output, output.shape, output.dtype)
 
     print("Intensity transformations:")
-    for index, item in enumerate(list[IntTransform]):
+    for index, item in enumerate(list(IntTransform)):
         print(index, "-", item.value)
     chosen_index = int(input("Enter Choice:"))
     chosenT = list(IntTransform)[chosen_index]
 
     plt.ion()
-    tfig, tline, tfill = create_transform_plot(np.arange(256, dtype="unit8"))
+    tfig, tline, tfill = create_transform_plot(np.arange(256, dtype="uint8"))
 
     ###############################################################################
     # PYTORCH
@@ -127,7 +132,11 @@ def main():
         print("Opening the webcam...")
 
         # Linux/Mac (or native Windows) with direct webcam connection
-        camera = cv2.VideoCapture(0, cv2.CAP_DSHOW) # CAP_DSHOW recommended on Windows 
+        # camera
+        # try:
+        #     camera = cv2.VideoCapture(0, cv2.CAP_DSHOW) # CAP_DSHOW recommended on Windows 
+        # except:
+        camera = cv2.VideoCapture("images/noice.mp4")
                 
         # Did we get it?
         if not camera.isOpened():
