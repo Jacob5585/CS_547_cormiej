@@ -14,31 +14,89 @@ import torchvision
 from enum import Enum
 import matplotlib.pyplot as plt
 
-class IntTrnasform(Enum):
-    ORGINAL = "Orginal"
-    NEGATIVE = "negative"
+class IntTransform(Enum):
+    ORIGINAL = "Original"
+    NEGATIVE = "Negative"
+    SLICE = "Intensity Slicing"
+    CONTRAST = "Contrast Stretching"
 
 def do_transform(image, chosenT):
-    if chosenT == IntTrnasform.ORGINAL:
+    if chosenT == IntTransform.ORIGINAL:
         output = np.copy(image)
-        transform = np.array(256, dytpe="uint8")
-    elif chosenT == IntTrnasform.NEGTIVE:
+        transform = np.arange(256, dytpe="uint8")
+    elif chosenT == IntTransform.NEGATIVE:
         output = 255 - image
         transform = np.arange(255, -1, -1, dytpe="unit8")
+    elif chosenT == IntTransform.SLICE:
+        wMin = 100
+        wMax = 150
+        lut = np.zeros(256, dtype="uint8")
+        lut[wMin:(wMax+1)] = 255
+        transform = lut
+        output = transform[image]
+    elif chosenT == IntTransform.CONTRAST:
+        points = [[0,0], [127,50], [150,200], [255,255]]
+        r_knots, s_knots = zip(*points)
+        one_inter = lambda r: np.interp(r, r_knots, s_knots)
+        r = np.arange(256, dtype="float64")
+        lut = one_inter(r)
+        transform = np.clip(np.round(lut),0,255).astype("uint8")
+        output = transform[image]
     
     return output, transform
 
 def create_transform_plot(transform, title="Intensity Transform"):
-    fig, subfig = plt.subplots(1, 1, figsize(5, 5))
-    x = np.arrange(256)
-    line = subfig.plot(x, transform, color='black', )
-    fill = subfig.fill_
+    fig, subfig = plt.subplots(1, 1, figsize=(5, 5))
+    x = np.arange(256)
+    line = subfig.plot(x, transform, color="black", linewidth=1)
+    fill = subfig.fill_between(x, transform, color="gray", alpha=0.5)
+    subfig.set_xlabel("Input Intensity")
+    subfig.set_ylabel("Ouput Intensity")
+    subfig.set_xlim([0,255])
+    subfig.set_ylim([0,255])
+    subfig.set_title(title)
+    return fig, line[0], fill
+
+def update_transform_plot(transform, fig, line, fill):
+    line.set_ydata(transform)
+    x_coords = np.arange(256)
+    x_coords = np.append(x_coords, [255,0])
+    y_coords = np.copy(transform)
+    y_coords = np.append(y_coords, [0,0])
+    verts = np.array([np.column_stack([x_coords, y_coords])])
+    #print(verts.shape)
+    fill.set_verts(verts)
+    fig.canvas.draw()
+    fig.canvas.flush_events()
 
 ###############################################################################
 # MAIN
 ###############################################################################
 
-def main():        
+def main():
+
+    image = np.array([[0,1,2,3],
+                      [3,2,1,0],
+                      [2,0,3,1]], 
+                      dtype="uint8")
+    
+    print(image, image.shape, image.dtype)
+
+    lut = np.array([3, 2, 1, 0], dtype="uint8") # dtype="float64")
+    print(lut, lut.shape, lut.dtype)
+
+    output = lut[image]
+    print(output, output.shape, output.dtype)
+
+    print("Intensity transformations:")
+    for index, item in enumerate(list[IntTransform]):
+        print(index, "-", item.value)
+    chosen_index = int(input("Enter Choice:"))
+    chosenT = list(IntTransform)[chosen_index]
+
+    plt.ion()
+    tfig, tline, tfill = create_transform_plot(np.arange(256, dtype="unit8"))
+
     ###############################################################################
     # PYTORCH
     ###############################################################################
@@ -85,9 +143,15 @@ def main():
         while key == -1:
             # Get next frame from camera
             _, image = camera.read()
+
+            grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            output, transform = do_transform(grayscale, chosenT)
+
+            update_transform_plot(transform, tfig, tline, tfill)
             
             # Show the image
             cv2.imshow(windowName, image)
+            cv2.imshow("Output", output)
 
             # Wait 30 milliseconds, and grab any key presses
             key = cv2.waitKey(30)
@@ -130,4 +194,3 @@ def main():
 # The main function
 if __name__ == "__main__": 
     main()
-    
