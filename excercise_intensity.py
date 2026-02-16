@@ -10,9 +10,11 @@ import pandas
 import sklearn
 import timm
 import torchvision
-
 from enum import Enum
 import matplotlib.pyplot as plt
+from torch import nn
+from torchvision.transforms import v2
+
 
 class IntTransform(Enum):
     ORIGINAL = "Original"
@@ -79,6 +81,20 @@ def update_transform_plot(transform, fig, line, fill):
 ###############################################################################
 
 def main():
+
+    conv_layer = nn.Conv2d(in_channels=3, out_channels=1, kernel_size=1, bias=False)
+    model = nn.Sequential(conv_layer)
+
+    device = "cuda"
+    model = model.to(device)
+
+    loss_fn = nn.MSELoss() #L1Loss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    
+    data_transform = v2.Compose([
+        v2.ToImage(),
+        v2.ToDtype(dytpe=torch.float32, scale=True)
+    ])
 
     image = np.array([[0,1,2,3],
                       [3,2,1,0],
@@ -155,6 +171,23 @@ def main():
 
             grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             output, transform = do_transform(grayscale, chosenT)
+            
+            gray_channel = np.expand_dims(grayscale, cv2.COLOR_BGR2GRAY)
+            disered_output = data_transform(gray_channel)
+            disered_output = cv2.cvtColor(image, cv2.BGR2RGB)
+
+            color = cv2.cvtColor()
+
+            ####
+            model.train()
+            data_input = data_input.to(device)
+            desired_output = desired_output.to(device)
+            pred_output = model(data_input)
+            loss = loss_fn(pred_output, desired_output)
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+            ####
 
             update_transform_plot(transform, tfig, tline, tfill)
             
