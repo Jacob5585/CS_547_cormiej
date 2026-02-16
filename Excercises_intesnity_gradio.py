@@ -17,13 +17,13 @@ def main():
         gray = np.where(gray > 200, 255, 0)
         return gray
 
-    one_button.click()
+    # one_button.click()
     
     def on_upload(color):
         gray = cv2.cvtColor(color, cv2.COLOR_RGB2BGR)
         return gray
     
-    color_image.upload(fn=on_upload, inputs=[color_image], outputs=[gray_image])
+    color_image.upload(fn=on_upload, inputs=color_image, outputs=gray_image)
     
     demo.launch()
 
