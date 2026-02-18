@@ -34,6 +34,9 @@ def get_hist_equalize_transform(image, do_stretching):
     # cdf_min = np.min(cdf[cdf != 0])
     # cdf_max = np.max(cdf)
 
+    # print(f"\nCDF:\n{cdf[0]}\n\n")
+    # print(f"\nnormalized_historgram:\n{normalized_historgram[0]}\n\n")
+
     # Stretching
     if do_stretching == True:
         cdf = cdf - cdf[0]
@@ -46,7 +49,14 @@ def get_hist_equalize_transform(image, do_stretching):
     return lut
 
 def get_piecewise_linear_transform(points):
-    pass
+    print(points)
+    points = sorted(points, key=lambda x: x[0])
+
+    r, s = zip(*points)
+    # print(r)
+    # print(s)
+
+    
 
 def apply_intensity_transform(image, int_transform):
     pass
@@ -57,8 +67,13 @@ def estimate_gamma_exponent(image, output):
 def main():
     get_log_transform(10)
     get_gamma_transform(10)
-    fake_image = np.random.randint(0, 250, (100, 150), dtype=np.uint8)
-    get_hist_equalize_transform(fake_image, True)
+    
+    fake_image = np.random.randint(0, 256, (10, 10), dtype=np.uint8)
+    lut = get_hist_equalize_transform(fake_image, False)
+    # print(lut)
+
+    points = [(0,0), (64,32), (5, 10), (55, 55)]
+    get_piecewise_linear_transform(points)
 
 if __name__ == "__main__":
     main()
