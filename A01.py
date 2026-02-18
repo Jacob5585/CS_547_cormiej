@@ -53,10 +53,13 @@ def get_piecewise_linear_transform(points):
     points = sorted(points, key=lambda x: x[0])
 
     r, s = zip(*points)
-    # print(r)
-    # print(s)
+    _ = np.arange(256) # 0-255
 
-    
+    lut = np.interp(_, r, s)
+
+    lut = standarize_look_up_table(lut)
+
+    return lut
 
 def apply_intensity_transform(image, int_transform):
     pass
@@ -68,12 +71,13 @@ def main():
     get_log_transform(10)
     get_gamma_transform(10)
     
-    fake_image = np.random.randint(0, 256, (10, 10), dtype=np.uint8)
-    lut = get_hist_equalize_transform(fake_image, False)
+    image = np.array([[1, 0, 2], [0, 0, 0], [1, 2, 2], [0, 4, 0]], dtype="uint8")
+    lut = get_hist_equalize_transform(image, False)
     # print(lut)
 
-    points = [(0,0), (64,32), (5, 10), (55, 55)]
-    get_piecewise_linear_transform(points)
+    points = [[0,0], [50,20], [100,200], [255,255]]
+    piecewise_lut = get_piecewise_linear_transform(points)
+    print(f"piecewise_lut:\n{piecewise_lut}")
 
 if __name__ == "__main__":
     main()
