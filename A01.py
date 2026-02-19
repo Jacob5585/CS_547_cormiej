@@ -1,4 +1,6 @@
 import numpy as np
+import gradio as gr
+import cv2
 
 def standarize_look_up_table(lut):
     lut = np.round(lut)
@@ -50,7 +52,7 @@ def get_hist_equalize_transform(image, do_stretching):
     return lut
 
 def get_piecewise_linear_transform(points):
-    print(points)
+    # print(points)
     points = sorted(points, key=lambda x: x[0])
 
     r, s = zip(*points)
@@ -93,6 +95,71 @@ def estimate_gamma_exponent(image, output):
 
     return np.mean(gamma)
 
+def do_something_place_holder(input_image, task, stretching, gamma, max_r):
+    # gradio takes image in as RGB
+    grayscale = cv2.cvtColor(input_image, cv2.COLOR_RGB2GRAY)
+
+    if task == "Histogram Equalization":
+        lut = get_hist_equalize_transform(grayscale, stretching)
+        output_image = lut[grayscale]
+
+    elif task == "Gamma":
+        lut = get_gamma_transform(gamma)
+        output_image = lut[grayscale]
+
+    elif task == "Log":
+        lut = get_log_transform(max_r)
+        output_image = lut[grayscale]
+
+    # elif task == "piecewise":
+    #     lut = get_piecewise_linear_transform())
+    #     output_image = lut[grayscale]
+        
+    
+    return output_image
+
+def launch_gradio():
+    # Maybe only try to display them when the associated task is selcted
+
+    with gr.Blocks() as interface:
+        with gr.Row():
+            with gr.Column():
+                input_image = gr.Image(label="Input Image")
+                
+                task = gr.Radio(
+                    choices=["Histogram Equalization", "Gamma", "Log"],
+                    label="Options",
+                    value="Histogram Equalization"
+                )
+
+                with gr.Group():
+                    stretching = gr.Checkbox(label="do_stretching", value=True)
+                    gamma = gr.Slider(0.1, 10.0, value=1.0, step=0.1, label="Gamma Exponent")
+                    max_r = gr.Slider(1, 255, value=255, step=1, label="Max_r")
+
+                # button = gr.Button() Remove for live update
+
+            with gr.Column():
+                output_image = gr.Image(label="Output Image")
+
+        # Remove for live update
+        # button.click(
+        #     fn=do_something_place_holder,
+        #     inputs=[input_image, tasks, stretching, gamma, max_r],
+        #     outputs=output_image
+        # )
+
+        inputs = [input_image, task, stretching, gamma, max_r]
+
+        # updates when the non assicated checkbox/slider is adjsuted <maybe lock the non assicated ones)
+        for input in inputs:
+            input.change(
+                fn=do_something_place_holder,
+                inputs=[input_image, task, stretching, gamma, max_r],
+                outputs=output_image
+            )
+    
+    interface.launch()
 
 def main():
     get_log_transform(10)
@@ -108,6 +175,8 @@ def main():
 
     print("\n\n")
     estimate_gamma_exponent(image, image)
+
+    launch_gradio()
 
 if __name__ == "__main__":
     main()
