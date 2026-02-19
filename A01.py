@@ -26,7 +26,8 @@ def get_gamma_transform(gamma):
 
 def get_hist_equalize_transform(image, do_stretching):
     image = image.ravel()
-    max_intensity = np.max(image)
+    # max_intensity = np.max(image)
+    max_intensity = 255
     historgram = np.bincount(image, minlength=256)
     normalized_historgram = historgram / image.size
 
@@ -62,10 +63,36 @@ def get_piecewise_linear_transform(points):
     return lut
 
 def apply_intensity_transform(image, int_transform):
-    pass
+    transform_image = int_transform[image]
+    
+    return transform_image
 
 def estimate_gamma_exponent(image, output):
-    pass
+    # normalize
+    # image = image.as_type(np.float64) / 255
+    # output = output.as_type(np.float64) / 255
+    
+    image = image.ravel()#.astype(np.float64)
+    output = output.ravel()#.astype(np.float64)
+
+    historgram = np.bincount(image, minlength=256)
+    sums = np.bincount(image, weights=output, minlength=256)
+
+    lut = np.divide(sums, historgram, out=np.zeros_like(sums), where= historgram != 0)
+
+    intensities = np.arange(256)
+
+    masks = (historgram > 0) & (intensities > 0) & (intensities < 255) & (lut > 0)
+
+    valid_inputs = intensities[masks] / 255
+    valid_outputs = lut[masks] / 255
+
+    gamma = np.log(valid_outputs) / np.log(valid_inputs)
+
+    print(gamma)
+
+    return np.mean(gamma)
+
 
 def main():
     get_log_transform(10)
@@ -77,7 +104,10 @@ def main():
 
     points = [[0,0], [50,20], [100,200], [255,255]]
     piecewise_lut = get_piecewise_linear_transform(points)
-    print(f"piecewise_lut:\n{piecewise_lut}")
+    # print(f"piecewise_lut:\n{piecewise_lut}")
+
+    print("\n\n")
+    estimate_gamma_exponent(image, image)
 
 if __name__ == "__main__":
     main()
