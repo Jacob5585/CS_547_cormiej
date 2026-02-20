@@ -1,6 +1,7 @@
 import numpy as np
 import gradio as gr
 import cv2
+import matplotlib.pyplot as plt
 
 def standarize_look_up_table(lut):
     lut = np.round(lut)
@@ -47,18 +48,16 @@ def get_hist_equalize_transform(image, do_stretching):
 
     lut = cdf * max_intensity
     lut = standarize_look_up_table(lut)
-    # print(lut)
 
     return lut
 
 def get_piecewise_linear_transform(points):
-    # print(points)
     points = sorted(points, key=lambda x: x[0])
 
     r, s = zip(*points)
-    _ = np.arange(256) # 0-255
+    other_r = np.arange(256) # 0-255
 
-    lut = np.interp(_, r, s)
+    lut = np.interp(other_r, r, s)
 
     lut = standarize_look_up_table(lut)
 
@@ -70,32 +69,47 @@ def apply_intensity_transform(image, int_transform):
     return transform_image
 
 def estimate_gamma_exponent(image, output):
-    # normalize
-    # image = image.as_type(np.float64) / 255
-    # output = output.as_type(np.float64) / 255
-    
     image = image.ravel()#.astype(np.float64)
     output = output.ravel()#.astype(np.float64)
 
-    historgram = np.bincount(image, minlength=256)
-    sums = np.bincount(image, weights=output, minlength=256)
+    transform = np.zeros((256), dtype="uint8")
+    transform[image]= output
+    valid_mask = np.zeros((256), dtype="bool")
+    valid_mask[image]= True
+    valid_indices = np.arange(256, dtype="uint8")[valid_mask]
+    valid_transform_vals = transform[valid_mask]
 
-    lut = np.divide(sums, historgram, out=np.zeros_like(sums), where= historgram != 0)
+    # removes 0 as /0 is undefined
+    zero_mask = (valid_indices > 0) & (valid_transform_vals > 0)
+    valid_indices = valid_indices[zero_mask].astype(np.float64)
+    valid_transform_vals = valid_transform_vals[zero_mask].astype(np.float64)
+    
+    # Least square derivation of linear regression
+    log_r = np.log(valid_indices)
+    log_s = np.log(valid_transform_vals)
+    mean_r = np.mean(log_r)
+    mean_s = np.mean(log_s)
 
-    intensities = np.arange(256)
+    gamma = np.sum((log_r - mean_r)*(log_s - mean_s)) / np.sum((log_r - mean_r)**2)
 
-    masks = (historgram > 0) & (intensities > 0) & (intensities < 255) & (lut > 0)
+    return gamma
 
-    valid_inputs = intensities[masks] / 255
-    valid_outputs = lut[masks] / 255
+def get_histogram_image(image):
+    histogram = np.bincount(image.ravel(), minlength=256)
 
-    gamma = np.log(valid_outputs) / np.log(valid_inputs)
+    fig = plt.figure(figsize=(4,3))
+    plt.bar(np.arange(256), histogram, color="gray", width=1.0)
+    plt.title("Histogram")
+    plt.xlim([0, 255])
+    plt.tight_layout()
 
-    print(gamma)
+    return fig
 
-    return np.mean(gamma)
+def get_transformation_image(input_image, output_image):
 
-def do_something_place_holder(input_image, task, stretching, gamma, max_r):
+    return fig
+
+def process_gradio(input_image, task, stretching, gamma, max_r):
     # gradio takes image in as RGB
     grayscale = cv2.cvtColor(input_image, cv2.COLOR_RGB2GRAY)
 
@@ -114,9 +128,11 @@ def do_something_place_holder(input_image, task, stretching, gamma, max_r):
     # elif task == "piecewise":
     #     lut = get_piecewise_linear_transform())
     #     output_image = lut[grayscale]
-        
     
-    return output_image
+    input_historgram = get_histogram_image(input_image)
+    output_historgram = get_histogram_image(output_image)
+    
+    return output_image, input_historgram, output_historgram
 
 def launch_gradio():
     # Maybe only try to display them when the associated task is selcted
@@ -124,8 +140,6 @@ def launch_gradio():
     with gr.Blocks() as interface:
         with gr.Row():
             with gr.Column():
-                input_image = gr.Image(label="Input Image")
-                
                 task = gr.Radio(
                     choices=["Histogram Equalization", "Gamma", "Log"],
                     label="Options",
@@ -140,32 +154,41 @@ def launch_gradio():
                 # button = gr.Button() Remove for live update
 
             with gr.Column():
+                input_image = gr.Image(label="Input Image")
+                input_historgram = gr.Plot(label="Output Histogram")
+                
+
+            with gr.Column():
                 output_image = gr.Image(label="Output Image")
+                output_historgram = gr.Plot(label="Output Histogram")
+
 
         # Remove for live update
         # button.click(
-        #     fn=do_something_place_holder,
+        #     fn=process_gradio,
         #     inputs=[input_image, tasks, stretching, gamma, max_r],
         #     outputs=output_image
         # )
 
         inputs = [input_image, task, stretching, gamma, max_r]
+        outputs = [output_image, input_historgram, output_historgram]
 
         # updates when the non assicated checkbox/slider is adjsuted <maybe lock the non assicated ones)
         for input in inputs:
             input.change(
-                fn=do_something_place_holder,
+                fn=process_gradio,
                 inputs=[input_image, task, stretching, gamma, max_r],
-                outputs=output_image
+                outputs=outputs
             )
-    
+
     interface.launch()
 
 def main():
     get_log_transform(10)
     get_gamma_transform(10)
     
-    image = np.array([[1, 0, 2], [0, 0, 0], [1, 2, 2], [0, 4, 0]], dtype="uint8")
+    image = np.array([[1, 0],[2, 4]], dtype="uint8")
+    output = np.array([[1, 1], [3, 5]], dtype="uint8")
     lut = get_hist_equalize_transform(image, False)
     # print(lut)
 
@@ -174,7 +197,8 @@ def main():
     # print(f"piecewise_lut:\n{piecewise_lut}")
 
     print("\n\n")
-    estimate_gamma_exponent(image, image)
+    gamma = estimate_gamma_exponent(image, output)
+    print(gamma)
 
     launch_gradio()
 
