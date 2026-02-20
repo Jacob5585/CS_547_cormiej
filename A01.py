@@ -42,7 +42,7 @@ def get_hist_equalize_transform(image, do_stretching):
     # print(f"\nnormalized_historgram:\n{normalized_historgram[0]}\n\n")
 
     # Stretching
-    if do_stretching == True:
+    if do_stretching:
         cdf = cdf - cdf[0]
         cdf = cdf / cdf[-1]
 
@@ -98,14 +98,24 @@ def get_histogram_image(image):
     histogram = np.bincount(image.ravel(), minlength=256)
 
     fig = plt.figure(figsize=(4,3))
-    plt.bar(np.arange(256), histogram, color="gray", width=1.0)
     plt.title("Histogram")
+    plt.bar(np.arange(256), histogram, color="gray", width=1.0)
     plt.xlim([0, 255])
     plt.tight_layout()
 
     return fig
 
-def get_transformation_image(input_image, output_image):
+def get_transformation_image(lut):
+    x = np.arange(256)
+    fig = plt.figure(figsize=(4,3))
+    plt.title("Transformation Function")
+    plt.xlabel("Input Intensity")
+    plt.ylabel("Ouput Intensity")
+    plt.xlim([0, 255])
+    plt.ylim([0, 255])
+    plt.plot(x, lut, color="gray", linewidth=2)
+
+    plt.tight_layout()    
 
     return fig
 
@@ -131,8 +141,9 @@ def process_gradio(input_image, task, stretching, gamma, max_r):
     
     input_historgram = get_histogram_image(input_image)
     output_historgram = get_histogram_image(output_image)
+    transformation_plot = get_transformation_image(lut)
     
-    return output_image, input_historgram, output_historgram
+    return output_image, input_historgram, output_historgram, transformation_plot
 
 def launch_gradio():
     # Maybe only try to display them when the associated task is selcted
@@ -151,7 +162,7 @@ def launch_gradio():
                     gamma = gr.Slider(0.1, 10.0, value=1.0, step=0.1, label="Gamma Exponent")
                     max_r = gr.Slider(1, 255, value=255, step=1, label="Max_r")
 
-                # button = gr.Button() Remove for live update
+                transformation_plot = gr.Plot(label="Output Histogram")
 
             with gr.Column():
                 input_image = gr.Image(label="Input Image")
@@ -162,16 +173,8 @@ def launch_gradio():
                 output_image = gr.Image(label="Output Image")
                 output_historgram = gr.Plot(label="Output Histogram")
 
-
-        # Remove for live update
-        # button.click(
-        #     fn=process_gradio,
-        #     inputs=[input_image, tasks, stretching, gamma, max_r],
-        #     outputs=output_image
-        # )
-
         inputs = [input_image, task, stretching, gamma, max_r]
-        outputs = [output_image, input_historgram, output_historgram]
+        outputs = [output_image, input_historgram, output_historgram, transformation_plot]
 
         # updates when the non assicated checkbox/slider is adjsuted <maybe lock the non assicated ones)
         for input in inputs:
