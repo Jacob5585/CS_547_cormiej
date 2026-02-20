@@ -54,10 +54,10 @@ def get_hist_equalize_transform(image, do_stretching):
 def get_piecewise_linear_transform(points):
     points = sorted(points, key=lambda x: x[0])
 
-    r, s = zip(*points)
-    other_r = np.arange(256) # 0-255
+    r_knots, s_knots = zip(*points)
+    r = np.arange(256) # 0-255
 
-    lut = np.interp(other_r, r, s)
+    lut = np.interp(r, r_knots, s_knots)
 
     lut = standarize_look_up_table(lut)
 
@@ -107,6 +107,7 @@ def get_histogram_image(image):
 
 def get_transformation_image(lut):
     x = np.arange(256)
+
     fig = plt.figure(figsize=(4,3))
     plt.title("Transformation Function")
     plt.xlabel("Input Intensity")
@@ -119,7 +120,7 @@ def get_transformation_image(lut):
 
     return fig
 
-def process_gradio(input_image, task, stretching, gamma, max_r):
+def process_gradio(input_image, task, stretching, gamma, max_r, points_type):
     # gradio takes image in as RGB
     grayscale = cv2.cvtColor(input_image, cv2.COLOR_RGB2GRAY)
 
@@ -135,9 +136,15 @@ def process_gradio(input_image, task, stretching, gamma, max_r):
         lut = get_log_transform(max_r)
         output_image = lut[grayscale]
 
-    # elif task == "piecewise":
-    #     lut = get_piecewise_linear_transform())
-    #     output_image = lut[grayscale]
+    elif task == "Piecewise":
+        if points_type == "Contrast":
+            points = [[0,0], [50,20], [100,200], [255,255]]
+        elif points_type == "Sliceing":
+            points = [[0,10], [100,10], [101,200], [200,200], [201,10], [255,10]]
+
+        lut = get_piecewise_linear_transform(points)
+        output_image = lut[grayscale]
+        print(f"\n\n\n\noutput_image: {output_image}\n\n\n\n")
     
     input_historgram = get_histogram_image(input_image)
     output_historgram = get_histogram_image(output_image)
@@ -145,63 +152,82 @@ def process_gradio(input_image, task, stretching, gamma, max_r):
     
     return output_image, input_historgram, output_historgram, transformation_plot
 
+def unlock_input(task):
+
+    return (
+        gr.update(interactive=(task == "Histogram Equalization")),
+        gr.update(interactive=(task == "Gamma")),
+        gr.update(interactive=(task == "Log")),
+        gr.update(interactive=(task == "Piecewise"))
+    )
+
 def launch_gradio():
     # Maybe only try to display them when the associated task is selcted
-
     with gr.Blocks() as interface:
         with gr.Row():
             with gr.Column():
                 task = gr.Radio(
-                    choices=["Histogram Equalization", "Gamma", "Log"],
+                    choices=["Histogram Equalization", "Gamma", "Log", "Piecewise"],
                     label="Options",
                     value="Histogram Equalization"
                 )
 
                 with gr.Group():
-                    stretching = gr.Checkbox(label="do_stretching", value=True)
-                    gamma = gr.Slider(0.1, 10.0, value=1.0, step=0.1, label="Gamma Exponent")
-                    max_r = gr.Slider(1, 255, value=255, step=1, label="Max_r")
+                    stretching = gr.Checkbox(label="do_stretching", value=True, interactive=True)
+                    gamma = gr.Slider(0.1, 10.0, value=1.0, step=0.1, label="Gamma Exponent", interactive=False)
+                    max_r = gr.Slider(1, 255, value=255, step=1, label="Max_r", interactive=False)
+                    points = gr.Radio(
+                        choices=["Contrast", "Sliceing"],
+                        label="Points",
+                        value="Contrast", 
+                        interactive=False
+                    )
 
                 transformation_plot = gr.Plot(label="Output Histogram")
 
             with gr.Column():
                 input_image = gr.Image(label="Input Image")
                 input_historgram = gr.Plot(label="Output Histogram")
-                
 
             with gr.Column():
                 output_image = gr.Image(label="Output Image")
                 output_historgram = gr.Plot(label="Output Histogram")
 
-        inputs = [input_image, task, stretching, gamma, max_r]
+        inputs = [input_image, task, stretching, gamma, max_r, points]
         outputs = [output_image, input_historgram, output_historgram, transformation_plot]
+
+        task.change(
+            fn=unlock_input,
+            inputs=[task],
+            outputs=[stretching, gamma, max_r, points]
+        )
 
         # updates when the non assicated checkbox/slider is adjsuted <maybe lock the non assicated ones)
         for input in inputs:
             input.change(
                 fn=process_gradio,
-                inputs=[input_image, task, stretching, gamma, max_r],
+                inputs=[input_image, task, stretching, gamma, max_r, points],
                 outputs=outputs
             )
 
     interface.launch()
 
 def main():
-    get_log_transform(10)
-    get_gamma_transform(10)
+    # get_log_transform(10)
+    # get_gamma_transform(10)
     
-    image = np.array([[1, 0],[2, 4]], dtype="uint8")
-    output = np.array([[1, 1], [3, 5]], dtype="uint8")
-    lut = get_hist_equalize_transform(image, False)
-    # print(lut)
+    # image = np.array([[1, 0],[2, 4]], dtype="uint8")
+    # output = np.array([[1, 1], [3, 5]], dtype="uint8")
+    # lut = get_hist_equalize_transform(image, False)
+    # # print(lut)
 
-    points = [[0,0], [50,20], [100,200], [255,255]]
-    piecewise_lut = get_piecewise_linear_transform(points)
-    # print(f"piecewise_lut:\n{piecewise_lut}")
+    # points = [[0,0], [50,20], [100,200], [255,255]]
+    # piecewise_lut = get_piecewise_linear_transform(points)
+    # # print(f"piecewise_lut:\n{piecewise_lut}")
 
-    print("\n\n")
-    gamma = estimate_gamma_exponent(image, output)
-    print(gamma)
+    # print("\n\n")
+    # gamma = estimate_gamma_exponent(image, output)
+    # print(gamma)
 
     launch_gradio()
 
