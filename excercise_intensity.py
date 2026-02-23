@@ -93,7 +93,7 @@ def main():
     
     data_transform = v2.Compose([
         v2.ToImage(),
-        v2.ToDtype(dytpe=torch.float32, scale=True)
+        v2.ToDtype(dtype=torch.float32, scale=True)
     ])
 
     image = np.array([[0,1,2,3],
@@ -172,13 +172,14 @@ def main():
             grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             output, transform = do_transform(grayscale, chosenT)
             
-            gray_channel = np.expand_dims(grayscale, cv2.COLOR_BGR2GRAY)
-            disered_output = data_transform(gray_channel)
-            disered_output = cv2.cvtColor(image, cv2.BGR2RGB)
+            gray_channel = np.expand_dims(grayscale, axis=-1)            
+            desired_output = data_transform(gray_channel)
+            desired_output = torch.unsqueeze(desired_output, axis=0)
 
-            color = cv2.cvtColor()
+            color = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            data_input = data_transform(color)
+            data_input = torch.unsqueeze(data_input, axis=0)
 
-            ####
             model.train()
             data_input = data_input.to(device)
             desired_output = desired_output.to(device)
@@ -187,12 +188,23 @@ def main():
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
-            ####
+            
+            out_image = pred_output.detach().cpu()         
+            out_image = out_image.numpy()
+            out_image = out_image[0]
+            out_image = np.transpose(out_image, [1, 2, 0])
+
+            cv2.imshow("Predicted", out_image)
+
+            print("Weights:", conv_layer.weight.detach().cpu().numpy())
+
+
 
             update_transform_plot(transform, tfig, tline, tfill)
             
             # Show the image
-            cv2.imshow(windowName, image)
+            # cv2.imshow(windowName, image)
+            cv2.imshow(windowName, grayscale)
             cv2.imshow("Output", output)
 
             # Wait 30 milliseconds, and grab any key presses
