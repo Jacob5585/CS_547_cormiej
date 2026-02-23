@@ -63,8 +63,8 @@ def apply_intensity_transform(image, int_transform):
     return transform_image
 
 def estimate_gamma_exponent(image, output):
-    image = image.ravel()#.astype(np.float64)
-    output = output.ravel()#.astype(np.float64)
+    image = image.ravel()
+    output = output.ravel()
 
     transform = np.zeros((256), dtype="uint8")
     transform[image]= output
