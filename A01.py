@@ -35,13 +35,7 @@ def get_hist_equalize_transform(image, do_stretching):
     normalized_historgram = historgram / image.size
 
     cdf = np.cumsum(normalized_historgram)
-    # cdf_min = np.min(cdf[cdf != 0])
-    # cdf_max = np.max(cdf)
 
-    # print(f"\nCDF:\n{cdf[0]}\n\n")
-    # print(f"\nnormalized_historgram:\n{normalized_historgram[0]}\n\n")
-
-    # Stretching
     if do_stretching:
         cdf = cdf - cdf[0]
         cdf = cdf / cdf[-1]
@@ -162,7 +156,6 @@ def unlock_input(task):
     )
 
 def launch_gradio():
-    # Maybe only try to display them when the associated task is selcted
     with gr.Blocks() as interface:
         with gr.Row():
             with gr.Column():
@@ -213,22 +206,6 @@ def launch_gradio():
     interface.launch()
 
 def main():
-    # get_log_transform(10)
-    # get_gamma_transform(10)
-    
-    # image = np.array([[1, 0],[2, 4]], dtype="uint8")
-    # output = np.array([[1, 1], [3, 5]], dtype="uint8")
-    # lut = get_hist_equalize_transform(image, False)
-    # # print(lut)
-
-    # points = [[0,0], [50,20], [100,200], [255,255]]
-    # piecewise_lut = get_piecewise_linear_transform(points)
-    # # print(f"piecewise_lut:\n{piecewise_lut}")
-
-    # print("\n\n")
-    # gamma = estimate_gamma_exponent(image, output)
-    # print(gamma)
-
     launch_gradio()
 
 if __name__ == "__main__":
