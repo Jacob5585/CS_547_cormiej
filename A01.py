@@ -91,7 +91,7 @@ def estimate_gamma_exponent(image, output):
 def get_histogram_image(image):
     histogram = np.bincount(image.ravel(), minlength=256)
 
-    fig = plt.figure(figsize=(4,3))
+    fig = plt.figure(figsize=(4, 4))
     plt.title("Histogram")
     plt.bar(np.arange(256), histogram, color="gray", width=1.0)
     plt.xlim([0, 255])
@@ -102,7 +102,7 @@ def get_histogram_image(image):
 def get_transformation_image(lut):
     x = np.arange(256)
 
-    fig = plt.figure(figsize=(4,3))
+    fig = plt.figure(figsize=(4, 4))
     plt.title("Transformation Function")
     plt.xlabel("Input Intensity")
     plt.ylabel("Ouput Intensity")
@@ -115,6 +115,10 @@ def get_transformation_image(lut):
     return fig
 
 def process_gradio(input_image, task, stretching, gamma, max_r, points_type):
+
+    if input_image is None:
+        return None, None, None, None
+
     # gradio takes image in as RGB
     grayscale = cv2.cvtColor(input_image, cv2.COLOR_RGB2GRAY)
 
