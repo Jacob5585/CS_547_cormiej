@@ -138,7 +138,6 @@ def process_gradio(input_image, task, stretching, gamma, max_r, points_type):
 
         lut = get_piecewise_linear_transform(points)
         output_image = lut[grayscale]
-        print(f"\n\n\n\noutput_image: {output_image}\n\n\n\n")
     
     input_historgram = get_histogram_image(input_image)
     output_historgram = get_histogram_image(output_image)
