@@ -16,12 +16,40 @@ from enum import Enum
 class filterType(Enum):
     BOX = "Box Filter"
     GAUSS = "Gaussian Filter"
+    MEDIAN = "medianBlur"
+    LAPLACE = "Laplacian FILTER"
+    LAP_SHARP = "Laplacian sharp"
+    SOBEL_X = "Sobel_X"
+    SOBEL_Y = "Sobel_Y"
+    GRAD_MAG = "Gradient Magnitude"
 
 def do_filter(image, filter_size, filter_type):
     if filter_type == filterType.BOX:
         output = cv2.blur(image, ksize=(filter_size, filter_size))
     elif filter_type == filterType.GAUSS:
         output = cv2.GaussianBlur(image, ksize=(filter_size, filter_size), sigmaX=0)
+    elif filter_type == filterType.MEDIAN:
+        output = cv2.medianBlur(image, ksize=filter_size)
+    elif filter_type == filterType.LAPLACE:
+        laplacian = cv2.Laplacian(image, ddepth=cv2.CV_64F, ksize=filter_size, scale=0.25)
+        output = cv2.convertScaleAbs(laplacian, alpha=0.5, beta=127)
+    elif filter_type == filterType.LAP_SHARP:
+        laplacian = cv2.Laplacian(image, ddepth=cv2.CV_64F, ksize=filter_size, scale=0.25)
+        fimage = image.astype("float64")
+        fimage == laplacian
+        output = cv2.convertScaleAbs(fimage)
+    elif filter_type == filterType.SOBEL_X:
+            sbx = cv2.Sobel(image, cv2.CV_64F, dx=1, dy=0, ksize=filter_size, scale=0.25)
+            output = cv2.convertScaleAbs(sbx, alpha=0.5, beta=127.0)
+    elif filter_type == filterType.SOBEL_Y:
+        sby = cv2.Sobel(image, cv2.CV_64F, dx=1, dy=0, ksize=filter_size, scale=0.25)
+        output = cv2.convertScaleAbs(sby, alpha=0.5, beta=127.0)
+    elif filter_type == filterType.GRAD_MAG:
+        sbx = cv2.Sobel(image, cv2.CV_64F, dx=1, dy=0, ksize=filter_size, scale=0.25)        
+        sby = cv2.Sobel(image, cv2.CV_64F, dx=1, dy=0, ksize=filter_size, scale=0.25)
+        
+        grad_image = np.absolute(sbx) + np.absolute(sby)
+        output = cv2.convertScaleAbs(grad_image)
     
     return output
 
