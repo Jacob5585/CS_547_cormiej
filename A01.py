@@ -29,11 +29,11 @@ def get_gamma_transform(gamma):
 
 def get_hist_equalize_transform(image, do_stretching):
     image = image.ravel()
-    # max_intensity = np.max(image)
     max_intensity = 255
     historgram = np.bincount(image, minlength=256)
     normalized_historgram = historgram / image.size
 
+    # cdf = cumulative distribution function
     cdf = np.cumsum(normalized_historgram)
 
     if do_stretching:
@@ -51,6 +51,7 @@ def get_piecewise_linear_transform(points):
     r_knots, s_knots = zip(*points)
     r = np.arange(256) # 0-255
 
+    # apply linear interpolation
     lut = np.interp(r, r_knots, s_knots)
 
     lut = standarize_look_up_table(lut)
@@ -66,11 +67,18 @@ def estimate_gamma_exponent(image, output):
     image = image.ravel()
     output = output.ravel()
 
+    # Map image pixel value to output
     transform = np.zeros((256), dtype="uint8")
     transform[image]= output
+
+    # Track which vlaues in image have a mapping
     valid_mask = np.zeros((256), dtype="bool")
     valid_mask[image]= True
+
+    # Get the pixel values where mask is true
     valid_indices = np.arange(256, dtype="uint8")[valid_mask]
+
+    # Get the output values where mask is true
     valid_transform_vals = transform[valid_mask]
 
     # removes 0 as /0 is undefined
@@ -79,8 +87,8 @@ def estimate_gamma_exponent(image, output):
     valid_transform_vals = valid_transform_vals[zero_mask].astype(np.float64)
     
     # Linearize and normalize the exponential
-    log_r = np.log(valid_indices / 255.0)
-    log_s = np.log(valid_transform_vals / 255.0)
+    log_r = np.log(valid_indices / 255.0) # input
+    log_s = np.log(valid_transform_vals / 255.0) # output
     
     scaled_valid_indices = valid_indices ** 2
 
@@ -140,6 +148,7 @@ def process_gradio(input_image, task, stretching, gamma, max_r, points_type):
     elif task == "Piecewise":
         if points_type == "Contrast":
             points = [[0,0], [50,20], [100,200], [255,255]]
+
         elif points_type == "Sliceing":
             points = [[0,10], [100,10], [101,200], [200,200], [201,10], [255,10]]
 
@@ -154,6 +163,7 @@ def process_gradio(input_image, task, stretching, gamma, max_r, points_type):
 
 def unlock_input(task):
 
+    # return true on the active task
     return (
         gr.update(interactive=(task == "Histogram Equalization")),
         gr.update(interactive=(task == "Gamma")),
