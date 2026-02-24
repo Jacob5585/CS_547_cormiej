@@ -30,11 +30,11 @@ def get_gamma_transform(gamma):
 def get_hist_equalize_transform(image, do_stretching):
     image = image.ravel()
     max_intensity = 255
-    historgram = np.bincount(image, minlength=256)
-    normalized_historgram = historgram / image.size
+    histogram = np.bincount(image, minlength=256)
+    normalized_histogram = histogram / image.size
 
     # cdf = cumulative distribution function
-    cdf = np.cumsum(normalized_historgram)
+    cdf = np.cumsum(normalized_histogram)
 
     if do_stretching:
         cdf = cdf - cdf[0]
@@ -59,9 +59,9 @@ def get_piecewise_linear_transform(points):
     return lut
 
 def apply_intensity_transform(image, int_transform):
-    transform_image = int_transform[image]
+    lut = int_transform[image]
     
-    return transform_image
+    return lut
 
 def estimate_gamma_exponent(image, output):
     image = image.ravel()
@@ -135,31 +135,35 @@ def process_gradio(input_image, task, stretching, gamma, max_r, points_type):
 
     if task == "Histogram Equalization":
         lut = get_hist_equalize_transform(grayscale, stretching)
-        output_image = lut[grayscale]
+        # output_image = lut[grayscale]
+        output_image = apply_intensity_transform(grayscale, lut)
 
     elif task == "Gamma":
         lut = get_gamma_transform(gamma)
-        output_image = lut[grayscale]
+        # output_image = lut[grayscale]
+        output_image = apply_intensity_transform(grayscale, lut)
 
     elif task == "Log":
         lut = get_log_transform(max_r)
-        output_image = lut[grayscale]
+        # output_image = lut[grayscale]
+        output_image = apply_intensity_transform(grayscale, lut)
 
     elif task == "Piecewise":
         if points_type == "Contrast":
             points = [[0,0], [50,20], [100,200], [255,255]]
 
-        elif points_type == "Sliceing":
+        elif points_type == "Slicing":
             points = [[0,10], [100,10], [101,200], [200,200], [201,10], [255,10]]
 
         lut = get_piecewise_linear_transform(points)
-        output_image = lut[grayscale]
+        # output_image = lut[grayscale]
+        output_image = apply_intensity_transform(grayscale, lut)
     
-    input_historgram = get_histogram_image(grayscale)
-    output_historgram = get_histogram_image(output_image)
+    input_histogram = get_histogram_image(grayscale)
+    output_histogram = get_histogram_image(output_image)
     transformation_plot = get_transformation_image(lut)
     
-    return output_image, input_historgram, output_historgram, transformation_plot
+    return output_image, input_histogram, output_histogram, transformation_plot
 
 def unlock_input(task):
 
@@ -186,7 +190,7 @@ def launch_gradio():
                     gamma = gr.Slider(0.1, 10.0, value=1.0, step=0.1, label="Gamma Exponent", interactive=False)
                     max_r = gr.Slider(1, 255, value=255, step=1, label="Max_r", interactive=False)
                     points = gr.Radio(
-                        choices=["Contrast", "Sliceing"],
+                        choices=["Contrast", "Slicing"],
                         label="Points",
                         value="Contrast", 
                         interactive=False
@@ -196,14 +200,14 @@ def launch_gradio():
 
             with gr.Column():
                 input_image = gr.Image(label="Input Image")
-                input_historgram = gr.Plot(label="Output Histogram")
+                input_histogram = gr.Plot(label="Output Histogram")
 
             with gr.Column():
                 output_image = gr.Image(label="Output Image")
-                output_historgram = gr.Plot(label="Output Histogram")
+                output_histogram = gr.Plot(label="Output Histogram")
 
         inputs = [input_image, task, stretching, gamma, max_r, points]
-        outputs = [output_image, input_historgram, output_historgram, transformation_plot]
+        outputs = [output_image, input_histogram, output_histogram, transformation_plot]
 
         task.change(
             fn=unlock_input,
