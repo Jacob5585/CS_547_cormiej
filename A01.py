@@ -135,17 +135,14 @@ def process_gradio(input_image, task, stretching, gamma, max_r, points_type):
 
     if task == "Histogram Equalization":
         lut = get_hist_equalize_transform(grayscale, stretching)
-        # output_image = lut[grayscale]
         output_image = apply_intensity_transform(grayscale, lut)
 
     elif task == "Gamma":
         lut = get_gamma_transform(gamma)
-        # output_image = lut[grayscale]
         output_image = apply_intensity_transform(grayscale, lut)
 
     elif task == "Log":
         lut = get_log_transform(max_r)
-        # output_image = lut[grayscale]
         output_image = apply_intensity_transform(grayscale, lut)
 
     elif task == "Piecewise":
@@ -156,7 +153,6 @@ def process_gradio(input_image, task, stretching, gamma, max_r, points_type):
             points = [[0,10], [100,10], [101,200], [200,200], [201,10], [255,10]]
 
         lut = get_piecewise_linear_transform(points)
-        # output_image = lut[grayscale]
         output_image = apply_intensity_transform(grayscale, lut)
     
     input_histogram = get_histogram_image(grayscale)
