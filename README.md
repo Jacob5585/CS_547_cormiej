@@ -12,5 +12,5 @@ Image(s) will be displayed until a key is hit.
 
 ### A01.py
 This program performs grayscale iamge transformations for log, gamma, equalization, and piecewize transforms.  
-To estimate gamma the least square derivation of linear regression is used.  
+To estimate gamma weighted least square of log linear regression is used.  
 When the program runs, the terminal will output a url for gradio. In gradio you can upload an image and choice the transformation to apply. This then will return the transformed grayscale image, the input, output histogram, and the transformation graph.

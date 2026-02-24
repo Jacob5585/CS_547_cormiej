@@ -78,13 +78,16 @@ def estimate_gamma_exponent(image, output):
     valid_indices = valid_indices[zero_mask].astype(np.float64)
     valid_transform_vals = valid_transform_vals[zero_mask].astype(np.float64)
     
-    # Least square derivation of linear regression
-    log_r = np.log(valid_indices)
-    log_s = np.log(valid_transform_vals)
-    mean_r = np.mean(log_r)
-    mean_s = np.mean(log_s)
+    # Linearize and normalize the exponential
+    log_r = np.log(valid_indices / 255.0)
+    log_s = np.log(valid_transform_vals / 255.0)
+    
+    scaled_valid_indices = valid_indices ** 2
 
-    gamma = np.sum((log_r - mean_r)*(log_s - mean_s)) / np.sum((log_r - mean_r)**2)
+    # Weighted Least Square of Log Linear Regression
+    # Weighted covariance between log_r and log_s divided  weigted variance of log_r
+    # calcualtes the slope of the log linear regression
+    gamma = (np.sum(log_r * log_s * scaled_valid_indices)) / (np.sum(log_r * log_r * scaled_valid_indices))
 
     return gamma
 
@@ -143,7 +146,7 @@ def process_gradio(input_image, task, stretching, gamma, max_r, points_type):
         lut = get_piecewise_linear_transform(points)
         output_image = lut[grayscale]
     
-    input_historgram = get_histogram_image(input_image)
+    input_historgram = get_histogram_image(grayscale)
     output_historgram = get_histogram_image(output_image)
     transformation_plot = get_transformation_image(lut)
     
@@ -179,7 +182,7 @@ def launch_gradio():
                         interactive=False
                     )
 
-                transformation_plot = gr.Plot(label="Output Histogram")
+                transformation_plot = gr.Plot(label="Transformation Plot")
 
             with gr.Column():
                 input_image = gr.Image(label="Input Image")
