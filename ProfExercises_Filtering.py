@@ -13,7 +13,6 @@ import torchvision
 from enum import Enum
 from torch import nn
 from torchvision.transforms import v2
-from numpy.lib.stride_tricks import sliding_window_view
 
 class FilterType(Enum):
     BOX = "Box Filter"
@@ -98,6 +97,23 @@ def main():
     
     
     
+    
+    conv_layer = nn.Conv2d(in_channels=1, out_channels=1, 
+                           kernel_size=3, bias=False,
+                           padding="same")
+    model = nn.Sequential(conv_layer)
+    print(model)
+        
+    device = "cuda" # mps # cpu
+    model = model.to(device)
+    
+    loss_fn = nn.MSELoss() # L1Loss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    
+    data_transform = v2.Compose([
+        v2.ToImage(),
+        v2.ToDtype(dtype=torch.float32, scale=True)        
+    ])
     
     conv_layer = nn.Conv2d(in_channels=1, out_channels=1, 
                            kernel_size=3, bias=False,
