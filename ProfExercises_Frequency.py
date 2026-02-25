@@ -11,6 +11,7 @@ import sklearn
 import timm
 import torchvision
 
+<<<<<<< HEAD
 left_mouse_down = False
 right_mouse_down = False
 
@@ -302,12 +303,20 @@ def do_frequency(image, mask_image):
     output, mask_image = filter_with_fourier(image, kernel, mask_image)
     return output, mask_image
 
+=======
+def do_frequency(image, mask_image):
+    output = np.copy(image)
+    # TODO
+    return output
+
+>>>>>>> 35ff416 (Finished filtering and started on frequency exercises)
 ###############################################################################
 # MAIN
 ###############################################################################
 
 def main():  
     
+<<<<<<< HEAD
     '''
     complex_data = make_simple_complex(600)
     mag, phase = complex_to_polar(complex_data)
@@ -362,6 +371,8 @@ def main():
     
     exit()
     
+=======
+>>>>>>> 35ff416 (Finished filtering and started on frequency exercises)
     mask_image = None
           
     ###############################################################################
@@ -413,10 +424,17 @@ def main():
             _, image = camera.read()
             grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             
+<<<<<<< HEAD
             #if mask_image is None:
             #    mask_image = np.ones(grayscale.shape, dtype="float64")
             
             output, mask_image = do_frequency(grayscale, mask_image)
+=======
+            if mask_image is None:
+                mask_image = np.ones(grayscale.shape, dtype="float64")
+            
+            output = do_frequency(grayscale, mask_image)
+>>>>>>> 35ff416 (Finished filtering and started on frequency exercises)
             
             # Show the image
             cv2.imshow(windowName, image)
