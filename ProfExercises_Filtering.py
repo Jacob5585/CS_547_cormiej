@@ -13,6 +13,7 @@ import torchvision
 from enum import Enum
 from torch import nn
 from torchvision.transforms import v2
+from numpy.lib.stride_tricks import sliding_window_view
 
 class FilterType(Enum):
     BOX = "Box Filter"
@@ -92,6 +93,11 @@ def toy_filtering_example():
 ###############################################################################
 
 def main(): 
+    toy_filtering_example()
+    exit()
+    
+    
+    
     
     conv_layer = nn.Conv2d(in_channels=1, out_channels=1, 
                            kernel_size=3, bias=False,
