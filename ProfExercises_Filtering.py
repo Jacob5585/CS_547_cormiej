@@ -13,6 +13,7 @@ import torchvision
 from enum import Enum
 from torch import nn
 from torchvision.transforms import v2
+from numpy.lib.stride_tricks import sliding_window_view
 
 class FilterType(Enum):
     BOX = "Box Filter"
