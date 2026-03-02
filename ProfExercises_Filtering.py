@@ -88,6 +88,24 @@ def toy_filtering_example():
     
     
 
+def toy_filtering_example():
+    rows, cols = 4, 5
+    image = np.reshape(np.arange(rows*cols), (rows,cols))
+    print(image, image.shape)
+    
+    patches = sliding_window_view(image, window_shape=(3,3))
+    #print(patches, patches.shape)
+    
+    kernel = np.array([[1,2,1],
+                       [0,0,0],
+                       [-1,-2,-1]])
+    
+    output = np.tensordot(patches, kernel, axes=[[2,3],[0,1]])
+    print(output, output.shape)
+    
+    
+    
+
 ###############################################################################
 # MAIN
 ###############################################################################
@@ -120,6 +138,11 @@ def main():
         v2.ToImage(),
         v2.ToDtype(dtype=torch.float32, scale=True)        
     ])
+    toy_filtering_example()
+    exit()
+    
+    
+    
     
     conv_layer = nn.Conv2d(in_channels=1, out_channels=1, 
                            kernel_size=3, bias=False,
