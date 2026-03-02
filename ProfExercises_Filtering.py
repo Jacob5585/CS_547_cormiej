@@ -93,6 +93,7 @@ def toy_filtering_example():
 ###############################################################################
 
 def main(): 
+    toy_filtering_example()
     
     conv_layer = nn.Conv2d(in_channels=1, out_channels=1, 
                            kernel_size=3, bias=False,
@@ -111,10 +112,6 @@ def main():
         v2.ToDtype(dtype=torch.float32, scale=True)        
     ])
     toy_filtering_example()
-    exit()
-    
-    
-    
     
     conv_layer = nn.Conv2d(in_channels=1, out_channels=1, 
                            kernel_size=3, bias=False,
