@@ -82,7 +82,7 @@ def update_transform_plot(transform, fig, line, fill):
 
 def main():
 
-    conv_layer = nn.Conv2d(in_channels=3, out_channels=1, kernel_size=1, bias=False)
+    conv_layer = nn.Conv2d(in_channels=3, out_channels=1, kernel_size=1, bias=False, padding="same")
     model = nn.Sequential(conv_layer)
 
     device = "cuda"
