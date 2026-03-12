@@ -11,6 +11,6 @@ A basic sample that loads up the relevant libraries, prints versions numbers, an
 Image(s) will be displayed until a key is hit.
 
 ### A01.py
-This program performs grayscale image transformations for log, gamma, equalization, and piecewize transforms.  
+This program performs grayscale image transformations for log, gamma, equalization, and piecewise transforms.  
 To estimate gamma weighted least square of log linear regression is used.  
 When the program runs, the terminal will output a url for gradio. In gradio you can upload an image and choice the transformation to apply. This then will return the transformed grayscale image, the input, output histogram, and the transformation graph.
