@@ -63,19 +63,41 @@ def do_convolution_slow(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True):
 
     return output
 
-def do_convolution_fast(image, kernel, alpha=1.0, beta=0.0, convert_unit8=True):
-    pass
+def do_convolution_fast(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True):
+    padded_image, kernel, image_height, image_width, kernel_height, kernel_width = convolution_preprocess(image, kernel)
+    
+    strides = (
+        padded_image.strides[0], # Moves across the rows
+        padded_image.strides[1], # Move down the cols
+        padded_image.strides[0], # Move across kernel rows
+        padded_image.strides[1]  # Move across kernel cols
+    )
 
-def do_convolution_dourier(image, kernel, alpha=1.0, beta=0.0, convert_unit8=True):
+    # Each kernel patch in the image
+    regions = np.lib.stride_tricks.as_strided(
+        padded_image,
+        shape=(image_height, image_width, kernel_height, kernel_width),
+        strides=strides
+    )
+
+    # Multiple each kernel patch by the kernel then sum
+    output = np.sum(regions * kernel, axis=(2,3))
+
+    if convert_uint8:
+        output = cv2.convertScaleAbs(output, alpha=alpha, beta=beta)
+
+    return output
+
+def do_convolution_fourier(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True):
     pass
 
 def check_if_seperable(kernel):
     pass
 
-def do_convolution_separable(image, kernel, alpha=1.0, beta=0.0, convert_unit8=True, conv_func=do_convolution_fast):
+def do_convolution_separable(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True, conv_func=do_convolution_fast):
     pass
 
-def do_convolution_optimal(image, kernel, alpha=1.0, beta=0.0, convert_unit8=True):
+def do_convolution_optimal(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True):
     pass
 
 def main():
@@ -90,8 +112,11 @@ def main():
     image = f'./assign02/images/basic00.png'
     image = cv2.imread(image, cv2.IMREAD_GRAYSCALE)
 
-    image = do_convolution_slow(image, kernel)
-    cv2.imwrite("image.png", image)
+    image_slow = do_convolution_slow(image, kernel)
+    cv2.imwrite("image_slow.png", image_slow)
+
+    image_fast = do_convolution_fast(image, kernel)
+    cv2.imwrite("image_fast.png", image_fast)
 
     pass
 
