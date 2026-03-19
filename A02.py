@@ -37,6 +37,9 @@ def convolution_preprocess(image, kernel):
 
     return padded_image, kernel, image_height, image_width, kernel_height, kernel_width
 
+def convolution_foruier_preprocess(image, kernel):
+    pass
+
 def do_convolution_slow(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True):
     padded_image, kernel, image_height, image_width, kernel_height, kernel_width = convolution_preprocess(image, kernel)
 
@@ -89,13 +92,69 @@ def do_convolution_fast(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True):
     return output
 
 def do_convolution_fourier(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True):
-    pass
+    image = image.astype(np.float64)
+    kernel = kernel.astype(np.float64)
+
+    # flip kernel
+    # kernel = cv2.flip(kernel, -1)
+
+    image_height, image_width = image.shape[:2]
+    kernel_height, kernel_width = kernel.shape[:2]
+
+    # extra pixels that the kernel will extend out passed in the image dimension
+    dft_height = cv2.getOptimalDFTSize(image_height + kernel_height - 1)
+    dft_width = cv2.getOptimalDFTSize(image_width + kernel_width - 1)
+
+    padded_image = np.pad(image, ((0, dft_height - image_height), (0, dft_width - image_width)), mode="constant", constant_values=0)
+    padded_kernel = np.pad(kernel, ((0, dft_height - kernel_height), (0, dft_width - kernel_width)), mode="constant", constant_values=0)
+
+    # convert to frequency domain
+    image_fft = np.fft.fft2(padded_image)
+    kernel_fft = np.fft.fft2(padded_kernel)
+
+    output_fft = image_fft * kernel_fft
+
+    # convert to spatial domain
+    output_conv = np.fft.ifft2(output_fft).real
+
+    start_height = (kernel_height) // 2
+    start_width = (kernel_width) // 2
+
+    output = output_conv[start_height : start_height + image_height, start_width : start_width + image_width]
+
+    if convert_uint8:
+        output = cv2.convertScaleAbs(output, alpha=alpha, beta=beta)
+
+    return output
 
 def check_if_seperable(kernel):
-    pass
+    kernel = kernel.astype(np.float64)
+    U, S, VT = np.linalg.svd(kernel)
+    EPS = 1e-5
+
+    separable = (np.sum (S > EPS) == 1)
+
+    if separable:
+        u = U[:,0]
+        v = VT[0,:]
+
+        vert_filter = np.reshape(S[0]*u, (kernel.shape[0], 1))
+        horiz_filter = np.reshape(v, (1, kernel.shape[1]))
+
+        return True, vert_filter, horiz_filter
+    else:
+        return False, None, None
 
 def do_convolution_separable(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True, conv_func=do_convolution_fast):
-    pass
+    seperable, vert_filter, horiz_filter = check_if_seperable(kernel)
+
+    if seperable:
+        vert_image = conv_func(image, vert_filter)
+        image = conv_func(vert_image, horiz_filter)
+
+        return image
+    else:
+        return None
 
 def do_convolution_optimal(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True):
     pass
@@ -109,14 +168,16 @@ def main():
 
     filepath = f'./assign02/filters/Filter_000.txt'
     kernel = read_kernel_file(filepath)
-    image = f'./assign02/images/basic00.png'
-    image = cv2.imread(image, cv2.IMREAD_GRAYSCALE)
+    # image = f'./assign02/images/basic00.png'
+    # image = cv2.imread(image, cv2.IMREAD_GRAYSCALE)
 
-    image_slow = do_convolution_slow(image, kernel)
-    cv2.imwrite("image_slow.png", image_slow)
+    # image_slow = do_convolution_slow(image, kernel)
+    # cv2.imwrite("image_slow.png", image_slow)
 
-    image_fast = do_convolution_fast(image, kernel)
-    cv2.imwrite("image_fast.png", image_fast)
+    # image_fast = do_convolution_fast(image, kernel)
+    # cv2.imwrite("image_fast.png", image_fast)
+
+    print(check_if_seperable(kernel))
 
     pass
 
