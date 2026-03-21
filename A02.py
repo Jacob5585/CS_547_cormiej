@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import gradio as gr
 
 def read_kernel_file(filepath):
     with open(filepath) as f:
@@ -157,29 +158,53 @@ def do_convolution_separable(image, kernel, alpha=1.0, beta=0.0, convert_uint8=T
         return None
 
 def do_convolution_optimal(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True):
-    pass
+    if kernel.shape[0] * kernel.shape[1] > 225:
+        output = do_convolution_fourier(image, kernel)
+        return output
+    
+    output = do_convolution_separable(image, kernel)
+
+    if output is not None:
+        return output
+    else:
+        output = do_convolution_fast(image, kernel)
+        return output
+
+def process_gradio(input_image, input_kernel, alpha, beta):
+    print(f"input_kernel: {input_kernel.name}")
+
+    kernel = read_kernel_file(input_kernel.name)
+
+    output = do_convolution_optimal(input_image, kernel, alpha, beta)
+
+    return output
+
+def launch_gradio():
+    with gr.Blocks() as interface:
+        with gr.Row():
+            with gr.Column():
+                input_image = gr.Image(label="Input Image", image_mode="L")
+                input_kernel = gr.File(label="Kernel Image", file_types=[".txt"])
+
+                with gr.Row():
+                    alpha = gr.Number(label="Alpha", value=0.0)
+                    beta = gr.Number(label="Beta", value=0.0)
+
+                submit_button = gr.Button("Submit")
+
+            with gr.Column():
+                output_image = gr.Image(label="Output Image", image_mode="L")
+
+        submit_button.click(
+            fn=process_gradio,
+            inputs=[input_image, input_kernel, alpha, beta],
+            outputs=output_image
+        )
+    
+    interface.launch()
 
 def main():
-
-    # for i in range(9):
-    #     filepath = f'./assign02/filters/Filter_00{i}.txt'
-    #     kernel = read_kernel_file(filepath)
-    #     print(filepath, ":\n", kernel, "\n\n")
-
-    filepath = f'./assign02/filters/Filter_000.txt'
-    kernel = read_kernel_file(filepath)
-    # image = f'./assign02/images/basic00.png'
-    # image = cv2.imread(image, cv2.IMREAD_GRAYSCALE)
-
-    # image_slow = do_convolution_slow(image, kernel)
-    # cv2.imwrite("image_slow.png", image_slow)
-
-    # image_fast = do_convolution_fast(image, kernel)
-    # cv2.imwrite("image_fast.png", image_fast)
-
-    print(check_if_seperable(kernel))
-
-    pass
+    launch_gradio()
 
 if __name__ == "__main__":
     main()
