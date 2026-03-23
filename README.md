@@ -26,5 +26,4 @@ In the Gauss kernel seperable fast method outperforms the fourier method for sma
 Based on the graphs for the odd kernel the optimal is on par with the fourier method and outperforms the fast method. 
 Based on the grpahs for the gauss kernel the optimal outperforms all other methods (fast, fourier, seperable fast, and seperable fourier)
 
-![Chart for timings](assign02/charts/AllTimingsGraph.png)
-![Chart for timings](assign02/charts/AllTimingsSumGraph.png)
+![Chart for timings](assign02/output/AllTimingsGraph.png) ![Chart for timings](assign02/output/AllTimingsSumGraph.png)
