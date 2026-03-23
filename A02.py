@@ -24,9 +24,6 @@ def convolution_preprocess(image, kernel):
     # flip kernel
     kernel = cv2.flip(kernel, -1)
 
-    # print(f"image.shape:\n{image.shape}")
-    # print(f"kernel.shape:\n{kernel.shape}")
-
     image_height, image_width = image.shape[:2]
     kernel_height, kernel_width = kernel.shape[:2]
 
@@ -37,9 +34,6 @@ def convolution_preprocess(image, kernel):
     padded_image = np.pad(image, ((pad_height, pad_height), (pad_width, pad_width)), mode="constant", constant_values=0)
 
     return padded_image, kernel, image_height, image_width, kernel_height, kernel_width
-
-def convolution_foruier_preprocess(image, kernel):
-    pass
 
 def do_convolution_slow(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True):
     padded_image, kernel, image_height, image_width, kernel_height, kernel_width = convolution_preprocess(image, kernel)
@@ -52,8 +46,6 @@ def do_convolution_slow(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True):
         for j in range(image_width):
             extracted_region = padded_image[i:i + kernel_height, j:j + kernel_width]
             
-            # print(kernel_extract)
-
             # loop through kernel
             extracted_values = 0
             for h in range(kernel_height):
@@ -96,9 +88,6 @@ def do_convolution_fourier(image, kernel, alpha=1.0, beta=0.0, convert_uint8=Tru
     image = image.astype(np.float64)
     kernel = kernel.astype(np.float64)
 
-    # flip kernel
-    # kernel = cv2.flip(kernel, -1)
-
     image_height, image_width = image.shape[:2]
     kernel_height, kernel_width = kernel.shape[:2]
 
@@ -128,7 +117,7 @@ def do_convolution_fourier(image, kernel, alpha=1.0, beta=0.0, convert_uint8=Tru
 
     return output
 
-def check_if_seperable(kernel):
+def check_if_separable(kernel):
     kernel = kernel.astype(np.float64)
     U, S, VT = np.linalg.svd(kernel)
     EPS = 1e-5
@@ -136,42 +125,43 @@ def check_if_seperable(kernel):
     separable = (np.sum (S > EPS) == 1)
 
     if separable:
-        u = U[:,0]
-        v = VT[0,:]
+        u = U[:, 0]
+        v = VT[0, :]
 
-        vert_filter = np.reshape(S[0]*u, (kernel.shape[0], 1))
-        horiz_filter = np.reshape(v, (1, kernel.shape[1]))
+        vert_filter = (u * np.sqrt(S[0])).reshape(-1, 1)
+        horiz_filter = (v * np.sqrt(S[0])).reshape(1, -1)
 
         return True, vert_filter, horiz_filter
     else:
         return False, None, None
 
 def do_convolution_separable(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True, conv_func=do_convolution_fast):
-    seperable, vert_filter, horiz_filter = check_if_seperable(kernel)
+    seperable, vert_filter, horiz_filter = check_if_separable(kernel)
 
     if seperable:
-        vert_image = conv_func(image, vert_filter)
-        image = conv_func(vert_image, horiz_filter)
+        vert_image = conv_func(image, vert_filter, alpha, beta, convert_uint8=False)
+        image = conv_func(vert_image, horiz_filter, alpha, beta, convert_uint8)
 
         return image
     else:
         return None
 
 def do_convolution_optimal(image, kernel, alpha=1.0, beta=0.0, convert_uint8=True):
-    if kernel.shape[0] * kernel.shape[1] > 225:
-        output = do_convolution_fourier(image, kernel)
+    
+    if kernel.shape[0] * kernel.shape[1] > 100:
+        output = do_convolution_fourier(image, kernel, alpha, beta, convert_uint8)
         return output
     
-    output = do_convolution_separable(image, kernel)
+    output = do_convolution_separable(image, kernel, alpha, beta, convert_uint8)
 
     if output is not None:
         return output
+    
     else:
-        output = do_convolution_fast(image, kernel)
+        output = do_convolution_fourier(image, kernel, alpha, beta, convert_uint8)
         return output
 
 def process_gradio(input_image, input_kernel, alpha, beta):
-    print(f"input_kernel: {input_kernel.name}")
 
     kernel = read_kernel_file(input_kernel.name)
 
@@ -187,8 +177,8 @@ def launch_gradio():
                 input_kernel = gr.File(label="Kernel Image", file_types=[".txt"])
 
                 with gr.Row():
-                    alpha = gr.Number(label="Alpha", value=0.0)
-                    beta = gr.Number(label="Beta", value=0.0)
+                    alpha = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=1.0, label="Alpha")
+                    beta = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=0.0, label="Beta")
 
                 submit_button = gr.Button("Submit")
 
