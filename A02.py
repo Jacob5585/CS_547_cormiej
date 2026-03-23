@@ -4,7 +4,7 @@ import gradio as gr
 
 def read_kernel_file(filepath):
     with open(filepath) as f:
-        content = f.read()
+        content = f.readline()
     
     content = content.strip()
     tokens = content.split(" ")
