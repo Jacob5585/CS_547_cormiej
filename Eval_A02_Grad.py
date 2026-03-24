@@ -56,8 +56,8 @@ MAX_ODD_SIZE = 43
 MAX_GAUSS_SIZE = 65
 
 # These settings can be modified 
-MAX_TRIAL_CNT = 50
-PRINT_DEBUG = False
+MAX_TRIAL_CNT = 30
+PRINT_DEBUG = True
 DO_GRAPH_SMOOTHING = False
 GRAPH_MARKER = None # 'o'
 GRAPH_USE_LOG_SCALE = True
