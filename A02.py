@@ -95,8 +95,9 @@ def do_convolution_fourier(image, kernel, alpha=1.0, beta=0.0, convert_uint8=Tru
     dft_height = cv2.getOptimalDFTSize(image_height + kernel_height - 1)
     dft_width = cv2.getOptimalDFTSize(image_width + kernel_width - 1)
 
-    padded_image = np.pad(image, ((0, dft_height - image_height), (0, dft_width - image_width)), mode="constant", constant_values=0)
-    padded_kernel = np.pad(kernel, ((0, dft_height - kernel_height), (0, dft_width - kernel_width)), mode="constant", constant_values=0)
+    padded_image = cv2.copyMakeBorder(image, 0, dft_height - image_height, 0, dft_width - image_width, cv2.BORDER_CONSTANT, value=0)
+    
+    padded_kernel = cv2.copyMakeBorder(kernel, 0, dft_height - kernel_height, 0, dft_width - kernel_width, cv2.BORDER_CONSTANT, value=0)
 
     # convert to frequency domain
     image_fft = np.fft.fft2(padded_image)
