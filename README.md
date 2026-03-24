@@ -16,14 +16,13 @@ To estimate gamma weighted least square of log linear regression is used.
 When the program runs, the terminal will output a url for gradio. In gradio you can upload an image and choice the transformation to apply. This then will return the transformed grayscale image, the input, output histogram, and the transformation graph.
 
 ### A02.py
-This program performs convolutions on grayscale images. In gradio you can upload an image, upload a kernel, select a number for alpha, and beta. Gradio will choose an optimized convoultion function, apply the kernel for convolution to the image, then return the convultion image to gradio.
+This program performs convolutions on grayscale images. In gradio you can upload an image, upload a kernel, select a number for alpha, and beta. Gradio will choose an optimized convolution function, apply the kernel for convolution to the image, then return the convultion image to gradio.
 
 ##### Optimal Convolution
-<!-- justify your implementation choice by providing timing charts from running the evaluation script and your own explanation/analysis text -->
-The optimal implementation checks first is the kernel size is greater than 100, if so it uses fourier convoultion. If not it tries to uses the seperable convoultion, if it is not seperable it use the fourier convoultion.
-In the odd kernel seperable is not possible to use, so fourier is the only method used, it outperforms the fast method no matter the kernel size.
-In the Gauss kernel seperable fast method outperforms the fourier method for smaller kernel sizes (kenrel < 11x11) so when a kernel size > 100 is reached it switches to using the fourier method.
-Based on the graphs for the odd kernel the optimal is on par with the fourier method and outperforms the fast method. 
-Based on the grpahs for the gauss kernel the optimal outperforms all other methods (fast, fourier, seperable fast, and seperable fourier)
+The optimal implementation first checks if the kernel size exceeds 100, if so it uses Fourier convolution. If not attempts to apply separable fast convolution. When the kernel is not separable, it falls back to Fourier convolution.
+For odd kernels separable  is not possible to use the separable approch, so Fourier is the only method used, it outperforms the fast method no matter the kernel size.
+For Gaussian kernels, the separable fast method outperforms the Fourier convolution for smaller kernel sizes (kenrel < 11x11), so when a kernel size > 100 is reached it switches to using the Fourier method.
+Based on the results, for odd kernels, the optimal method performs on par with Fourier convolution and outperforms the fast method. The overhead of switching to the frequency domain using FFT is lower than the cost of executing fast convolution in these cases.
+For Gaussian kernels, the optimal approach outperforms all other methods (fast, Fourier, separable fast, and separable Fourier). Separable convolution reduces the effective dimensionality of the kernel, significantly speeding up computation. However, for sufficiently large kernels, FFT-based convolution becomes more efficient, making the switch to Fourier convolution the best choice.
 
 ![Chart for timings](assign02/output/AllTimingsGraph.png) ![Chart for timings](assign02/output/AllTimingsSumGraph.png)
