@@ -16,6 +16,8 @@ To estimate gamma weighted least square of log linear regression is used.
 When the program runs, the terminal will output a url for gradio. In gradio you can upload an image and choice the transformation to apply. This then will return the transformed grayscale image, the input, output histogram, and the transformation graph.
 
 ### A02.py
+
+##### General Functionality
 This program performs convolutions on grayscale images. In gradio you can upload an image, upload a kernel, select a number for alpha, and beta. Gradio will choose an optimized convolution function, apply the kernel for convolution to the image, then return the convultion image to gradio.
 
 ##### Optimal Convolution
