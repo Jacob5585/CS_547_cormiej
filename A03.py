@@ -25,7 +25,10 @@ class CellFinder():
         self._train(self.wbc_model, train_data, 5, self.wbc_model_path)
 
     def find_WBC(self, image):
-        pass
+        if os.path.exists(self.save_path):
+            self.wbc_model.load_state_dict(torch.load(self.wbc_model_path, map_location=self.device))
+
+        return self._find_cell(image, self.wbc_model)
 
     def train_RBC(self, train_data):
         self._train(self.rbc_model, train_data, 5, self.wbc_model_path)
@@ -78,5 +81,19 @@ class CellFinder():
             
             torch.save(model.state_dict(), save_path)
 
-    def _find_cell(self):
-        pass
+    def _find_cell(self, image, model):
+        model.eval()
+
+        with torch.no_grad():
+            image_tensor = F.to_tensor(image).to(self.device)
+            prediction = model([image_tensor])[0]
+
+            detected_boxes = []
+            for box, score in zip(prediction['boxes'], prediction['scores']):
+            # Filter detections by confidence to avoid 'too many cells' penalties 
+                if score > 0.5:
+                    # Convert back to (ymin, xmin, ymax, xmax) for evaluation [cite: 20, 143]
+                    x1, y1, x2, y2 = box.tolist()
+                    detected_boxes.append((int(y1), int(x1), int(y2), int(x2)))
+        
+        return detected_boxes
