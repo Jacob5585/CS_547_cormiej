@@ -73,7 +73,7 @@ class CellFinder():
                 losses = sum(loss for loss in loss_dict.values())
 
                 optimizer.zero_grad()
-                losses.backwards()
+                losses.backward()
                 optimizer.step()
             
             torch.save(model.state_dict(), save_path)
