@@ -52,13 +52,22 @@ class CellFinder():
         optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
         for epoch in range(epochs):
-            for image, target in train_data:
+            for image, objects in train_data:
                 image_tensor = F.to_tensor(image).to(self.device)
 
-                boxes = torch.as_tensor(target['boxes'], dtype=torch.float32).to(self.device)
-                labels = torch.ones((len(boxes),), dtype=torch.int64).to(self.device)
-
-                targets = [{"boxes": boxes, "labels": labels}]
+                raw_boxes = objects['bbox'] 
+                if len(raw_boxes) == 0: 
+                    continue
+                
+                # Convert list of arrays to tensor and swap coordinates
+                formatted_boxes = []
+                for b in raw_boxes:
+                    formatted_boxes.append([b[1], b[0], b[3], b[2]])
+                
+                targets = [{
+                    "boxes": torch.as_tensor(formatted_boxes, dtype=torch.float32).to(self.device),
+                    "labels": torch.ones((len(formatted_boxes),), dtype=torch.int64).to(self.device)
+                }]
 
                 loss_dict = model([image_tensor], targets)
                 losses = sum(loss for loss in loss_dict.values())
@@ -68,3 +77,6 @@ class CellFinder():
                 optimizer.step()
             
             torch.save(model.state_dict(), save_path)
+
+    def _find_cell(self):
+        pass
