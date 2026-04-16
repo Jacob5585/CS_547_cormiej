@@ -25,16 +25,19 @@ class CellFinder():
         self._train(self.wbc_model, train_data, 5, self.wbc_model_path)
 
     def find_WBC(self, image):
-        if os.path.exists(self.save_path):
+        if os.path.exists(self.wbc_model_path):
             self.wbc_model.load_state_dict(torch.load(self.wbc_model_path, map_location=self.device))
 
         return self._find_cell(image, self.wbc_model)
 
     def train_RBC(self, train_data):
-        self._train(self.rbc_model, train_data, 5, self.wbc_model_path)
+        self._train(self.rbc_model, train_data, 5, self.rbc_model_path)
 
     def find_RBC(self, image):
-        pass
+        if os.path.exists(self.rbc_model_path):
+            self.rbc_model.load_state_dict(torch.load(self.rbc_model_path, map_location=self.device))
+
+        return self._find_cell(image, self.rbc_model)
 
     def _get_model(self, num_classes):
         model = torchvision.models.detection.retinanet_resnet50_fpn_v2(weights='DEFAULT')
@@ -65,7 +68,17 @@ class CellFinder():
                 # Convert list of arrays to tensor and swap coordinates
                 formatted_boxes = []
                 for b in raw_boxes:
-                    formatted_boxes.append([b[1], b[0], b[3], b[2]])
+                    # formatted_boxes.append([b[1], b[0], b[3], b[2]])
+                    xmin, ymin, xmax, ymax = b[1], b[0], b[3], b[2]
+
+                    if xmax > xmin and ymax > ymin:
+                        formatted_boxes.append([xmin, ymin, xmax, ymax])
+                    else:
+                        # Optional: Print a warning to see how much data you're losing
+                        print(f"Skipping degenerate box: {[xmin, ymin, xmax, ymax]}")
+
+                if len(formatted_boxes) == 0:
+                    continue
                 
                 targets = [{
                     "boxes": torch.as_tensor(formatted_boxes, dtype=torch.float32).to(self.device),
