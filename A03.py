@@ -6,6 +6,7 @@ import torchvision
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.models.detection.retinanet import RetinaNetClassificationHead
+from torchvision.transforms import functional as F
 from functools import partial
 
 class CellFinder():
@@ -21,13 +22,13 @@ class CellFinder():
 
     
     def train_WBC(self, train_data):
-        self._train(self.wbc_model, train_data, 50, self.wbc_model_path)
+        self._train(self.wbc_model, train_data, 5, self.wbc_model_path)
 
     def find_WBC(self, image):
         pass
 
     def train_RBC(self, train_data):
-        self._train(self.rbc_model, train_data, 50, self.wbc_model_path)
+        self._train(self.rbc_model, train_data, 5, self.wbc_model_path)
 
     def find_RBC(self, image):
         pass
@@ -48,7 +49,7 @@ class CellFinder():
     
     def _train(self, model, train_data, epochs, save_path):
         model.train()
-        optimizer = torch.optim.Adam(model.parmameters(), lr=0.0001)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
         for epoch in range(epochs):
             for image, target in train_data:
