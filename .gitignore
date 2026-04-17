@@ -4,3 +4,5 @@ __pycache__/
 .micromamba/
 data/
 ~*
+assign03/output_RBC/*.jpg
+assign03/output_WBC/*.pth
