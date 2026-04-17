@@ -6,8 +6,11 @@ import torchvision
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.models.detection.retinanet import RetinaNetClassificationHead
+# from torchvision.models.detection import RetinaNet_ResNet50_FPN_V2_Weights NOT TESTED YET
 from torchvision.transforms import functional as F
 from functools import partial
+
+# -> source for pytorch model https://debuggercafe.com/train-pytorch-retinanet-on-custom-dataset/
 
 class CellFinder():
     def __init__(self, model_dir):
@@ -19,10 +22,9 @@ class CellFinder():
 
         self.wbc_model = self._get_model(2)
         self.rbc_model = self._get_model(2)
-
     
     def train_WBC(self, train_data):
-        self._train(self.wbc_model, train_data, 5, self.wbc_model_path)
+        self._train(self.wbc_model, train_data, 50, self.wbc_model_path)
 
     def find_WBC(self, image):
         if os.path.exists(self.wbc_model_path):
@@ -31,7 +33,7 @@ class CellFinder():
         return self._find_cell(image, self.wbc_model)
 
     def train_RBC(self, train_data):
-        self._train(self.rbc_model, train_data, 5, self.rbc_model_path)
+        self._train(self.rbc_model, train_data, 50, self.rbc_model_path)
 
     def find_RBC(self, image):
         if os.path.exists(self.rbc_model_path):
@@ -61,20 +63,18 @@ class CellFinder():
             for image, objects in train_data:
                 image_tensor = F.to_tensor(image).to(self.device)
 
-                raw_boxes = objects['bbox'] 
-                if len(raw_boxes) == 0: 
+                raw_boxes = objects['bbox']
+                if len(raw_boxes) == 0:
                     continue
                 
                 # Convert list of arrays to tensor and swap coordinates
                 formatted_boxes = []
                 for b in raw_boxes:
-                    # formatted_boxes.append([b[1], b[0], b[3], b[2]])
-                    xmin, ymin, xmax, ymax = b[1], b[0], b[3], b[2]
+                    ymin, xmin, ymax, xmax = b
 
                     if xmax > xmin and ymax > ymin:
                         formatted_boxes.append([xmin, ymin, xmax, ymax])
                     else:
-                        # Optional: Print a warning to see how much data you're losing
                         print(f"Skipping degenerate box: {[xmin, ymin, xmax, ymax]}")
 
                 if len(formatted_boxes) == 0:
@@ -103,9 +103,8 @@ class CellFinder():
 
             detected_boxes = []
             for box, score in zip(prediction['boxes'], prediction['scores']):
-            # Filter detections by confidence to avoid 'too many cells' penalties 
+                # confidence_score
                 if score > 0.5:
-                    # Convert back to (ymin, xmin, ymax, xmax) for evaluation [cite: 20, 143]
                     x1, y1, x2, y2 = box.tolist()
                     detected_boxes.append((int(y1), int(x1), int(y2), int(x2)))
         
