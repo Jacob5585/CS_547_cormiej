@@ -26,3 +26,11 @@ Based on the results, for odd kernels, the optimal method performs on par with F
 For Gaussian kernels, the optimal approach outperforms all other methods (fast, Fourier, separable fast, and separable Fourier). Separable convolution reduces the effective dimensionality of the kernel, significantly speeding up computation. However, for sufficiently large kernels, FFT-based convolution becomes more efficient, making the switch to Fourier convolution the best choice.
 
 ![Chart for timings](assign02/output/AllTimingsGraph.png) ![Chart for timings](assign02/output/AllTimingsSumGraph.png)
+
+### A03.py
+This program trains a resnet classifier for counting white and red blood cells. For each blood cell type a resnet classifer is finetuned on the tranning model, then each respective model is used to count the cells.
+Download the models weights from
+wbc_model_pth: https://sunypoly-my.sharepoint.com/:u:/g/personal/cormiej_sunypoly_edu/IQDV2C8J-QmcQKPGcPGhjQVxAe7UxW5ntb9ljfInW5DlcKg?e=RqKHqK
+rbc_model_pth: https://sunypoly-my.sharepoint.com/:u:/g/personal/cormiej_sunypoly_edu/IQBiQutkTuGYSo2v5uKyxRo2AaQO6KWlWoDmcu9hwaKuGUk?e=xAosXj
+wbc_model_pth -> assign03/output_WBC/wbc_model_pth
+rbc_model_pth -> assign03/output_RBC/rbc_model_pth
