@@ -22,23 +22,23 @@ class CellFinder():
 
         self.wbc_model = self._get_model(2)
         self.rbc_model = self._get_model(2)
+
+        if os.path.exists(self.wbc_model_path):
+            self.wbc_model.load_state_dict(torch.load(self.wbc_model_path, map_location=self.device))
+        
+        if os.path.exists(self.rbc_model_path):
+            self.rbc_model.load_state_dict(torch.load(self.rbc_model_path, map_location=self.device))
     
     def train_WBC(self, train_data):
         self._train(self.wbc_model, train_data, 50, self.wbc_model_path)
 
     def find_WBC(self, image):
-        if os.path.exists(self.wbc_model_path):
-            self.wbc_model.load_state_dict(torch.load(self.wbc_model_path, map_location=self.device))
-
         return self._find_cell(image, self.wbc_model)
 
     def train_RBC(self, train_data):
         self._train(self.rbc_model, train_data, 50, self.rbc_model_path)
 
-    def find_RBC(self, image):
-        if os.path.exists(self.rbc_model_path):
-            self.rbc_model.load_state_dict(torch.load(self.rbc_model_path, map_location=self.device))
-
+    def find_RBC(self, image):     
         return self._find_cell(image, self.rbc_model)
 
     def _get_model(self, num_classes):
