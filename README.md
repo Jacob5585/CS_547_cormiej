@@ -30,7 +30,6 @@ For Gaussian kernels, the optimal approach outperforms all other methods (fast, 
 ### A03.py
 This program trains a resnet classifier for counting white and red blood cells. For each blood cell type a resnet classifer is finetuned on the tranning model, then each respective model is used to count the cells.
 Download the models weights from
-wbc_model_pth: https://sunypoly-my.sharepoint.com/:u:/g/personal/cormiej_sunypoly_edu/IQDV2C8J-QmcQKPGcPGhjQVxAe7UxW5ntb9ljfInW5DlcKg?e=RqKHqK
-rbc_model_pth: https://sunypoly-my.sharepoint.com/:u:/g/personal/cormiej_sunypoly_edu/IQBiQutkTuGYSo2v5uKyxRo2AaQO6KWlWoDmcu9hwaKuGUk?e=xAosXj
-wbc_model_pth -> assign03/output_WBC/wbc_model_pth
+wbc_model_pth: https://sunypoly-my.sharepoint.com/:u:/g/personal/cormiej_sunypoly_edu/IQDpByqcYJqSSKAA1xZMM_pNAcLU5BHqLVJouyN6Rz5shpY?e=Fuui7H
+rbc_model_pth: https://sunypoly-my.sharepoint.com/:u:/g/personal/cormiej_sunypoly_edu/IQC7GovmSrcFTox2KP5AD5VQAerx1AbVxEJ4-uUSogr2Kb8?e=DfY4WS
 rbc_model_pth -> assign03/output_RBC/rbc_model_pth
