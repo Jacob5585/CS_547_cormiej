@@ -64,3 +64,6 @@ Results:
 | multiscale_kernel_augmented  | 37.85 |	33.88 |	37.73	| 33.93 |
 | deep_block_model  | 91.86 |	91.78 |	81.32 |	81.16 |
 | deep_block_augmented  | 27.12	| 21.84 |	27.43 |	21.86 |
+
+Trained Models:
+All models are within the assign04/output directory
