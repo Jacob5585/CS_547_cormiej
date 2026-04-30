@@ -20,9 +20,9 @@ def get_approach_description(approach_name):
         case "avgpool_batchnorm_model":
             return "CNN with batch normalization and adaptive average pooling replacing max pooling."
         case "multiscale_kernel_model":
-            return "CNN with progressively smaller kernel sizes (7→5→3) and batch normalization."
+            return "CNN with progressively smaller kernel sizes (7 -> 5 -> 3) and batch normalization."
         case "multiscale_kernel_augmented":
-            return "CNN with progressively smaller kernel sizes (7→5→3) and batch normalization, uses data augmentation such as flips, rotations, and color jitter"
+            return "CNN with progressively smaller kernel sizes (7 -> 5 ->3) and batch normalization, uses data augmentation such as flips, rotations, and color jitter"
         case "deep_block_model":
             return "Deeper CNN with stacked convolutional blocks, batch normalization, and dropout."
         case "deep_block_augmented":

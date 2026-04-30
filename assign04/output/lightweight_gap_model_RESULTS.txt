@@ -3,7 +3,7 @@ APPROACHES:
 ****************************************
 
 * lightweight_gap_model
-	 
+	 Lightweight CNN using batch normalization, leaky ReLU, and global average pooling instead of fully connected layers.
 
 ****************************************
 RESULTS:

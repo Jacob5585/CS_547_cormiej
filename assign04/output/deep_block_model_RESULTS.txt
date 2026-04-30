@@ -3,13 +3,13 @@ APPROACHES:
 ****************************************
 
 * deep_block_model
-	 
+	 Deeper CNN with stacked convolutional blocks, batch normalization, and dropout.
 
 ****************************************
 RESULTS:
 ****************************************
 APPROACH	TRAINING_accuracy	TRAINING_f1	TESTING_accuracy	TESTING_f1
-deep_block_model	0.9186	0.9179	0.8132	0.8116
+deep_block_model	0.9186	0.9178	0.8132	0.8116
 
 ****************************************
 MODEL ARCHITECTURES:

@@ -3,7 +3,7 @@ APPROACHES:
 ****************************************
 
 * avgpool_batchnorm_model
-	 
+	 CNN with batch normalization and adaptive average pooling replacing max pooling.
 
 ****************************************
 RESULTS:

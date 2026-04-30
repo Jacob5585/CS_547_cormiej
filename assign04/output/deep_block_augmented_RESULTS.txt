@@ -3,13 +3,13 @@ APPROACHES:
 ****************************************
 
 * deep_block_augmented
-	 
+	 Deeper CNN with stacked convolutional blocks, batch normalization, and dropout, uses data augmentation for random horizontal flips, rotations, and normalization.
 
 ****************************************
 RESULTS:
 ****************************************
 APPROACH	TRAINING_accuracy	TRAINING_f1	TESTING_accuracy	TESTING_f1
-deep_block_augmented	0.2712	0.2184	0.2746	0.2189
+deep_block_augmented	0.2712	0.2184	0.2743	0.2186
 
 ****************************************
 MODEL ARCHITECTURES:

@@ -3,7 +3,7 @@ APPROACHES:
 ****************************************
 
 * multiscale_kernel_augmented
-	 
+	 CNN with progressively smaller kernel sizes (7 -> 5 ->3) and batch normalization, uses data augmentation such as flips, rotations, and color jitter
 
 ****************************************
 RESULTS:

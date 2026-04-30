@@ -3,7 +3,7 @@ APPROACHES:
 ****************************************
 
 * base_model
-	 
+	 Base 3 layer CNN with a 4th layer fully connected layer.
 
 ****************************************
 RESULTS:
