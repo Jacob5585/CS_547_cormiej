@@ -5,27 +5,27 @@ from torchvision import transforms
 from torchvision.transforms import v2
 
 def get_approach_names():
-    approches = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8"]
+    approches = ["base_model", "base_model_augmentations", "lightweight_gap_model", "avgpool_batchnorm_model", "multiscale_kernel_model", "multiscale_kernel_augmented", "deep_block_model", "deep_block_augmented"]
     
     return approches
 
 def get_approach_description(approach_name):
     match approach_name:
-        case "a1":
+        case "base_model":
             return "Base 3 layer CNN with a 4th layer fully connected layer."
-        case "a2":
+        case "base_model_augmentations":
             return "Base 3 layer CNN with a 4th layer fully connected layer, uses data aguemtnations for random horizontal flips and rotations to the."
-        case "a3":
+        case "lightweight_gap_model":
             return "Lightweight CNN using batch normalization, leaky ReLU, and global average pooling instead of fully connected layers."
-        case "a4":
+        case "avgpool_batchnorm_model":
             return "CNN with batch normalization and adaptive average pooling replacing max pooling."
-        case "a5":
+        case "multiscale_kernel_model":
             return "CNN with progressively smaller kernel sizes (7→5→3) and batch normalization."
-        case "a6":
+        case "multiscale_kernel_augmented":
             return "CNN with progressively smaller kernel sizes (7→5→3) and batch normalization, uses data augmentation such as flips, rotations, and color jitter"
-        case "a7":
+        case "deep_block_model":
             return "Deeper CNN with stacked convolutional blocks, batch normalization, and dropout."
-        case "a8":
+        case "deep_block_augmented":
             return "Deeper CNN with stacked convolutional blocks, batch normalization, and dropout, uses data augmentation for random horizontal flips, rotations, and normalization."
         case _:
             return "Not a valid approach"
@@ -40,11 +40,11 @@ def get_data_transform(approach_name, training):
     
     if training:
         match approach_name:
-            case "a1":
+            case "base_model":
                 data_transform = transforms.Compose([transforms.ToTensor(),])
                 return data_transform
 
-            case "a2":
+            case "base_model_augmentations":
                 data_transform = transforms.Compose([
                     transforms.RandomHorizontalFlip(),
                     transforms.RandomRotation(10),
@@ -52,19 +52,19 @@ def get_data_transform(approach_name, training):
                 ])
                 return data_transform
 
-            case "a3":
+            case "lightweight_gap_model":
                 data_transform = transforms.Compose([transforms.ToTensor(),])
                 return data_transform
 
-            case "a4":
+            case "avgpool_batchnorm_model":
                 data_transform = transforms.Compose([transforms.ToTensor(),])
                 return data_transform
 
-            case "a5":
+            case "multiscale_kernel_model":
                 data_transform = transforms.Compose([transforms.ToTensor(),])
                 return data_transform
 
-            case "a6":
+            case "multiscale_kernel_augmented":
                 data_transform = data_transform = transforms.Compose([
                     transforms.RandomHorizontalFlip(),
                     transforms.RandomRotation(15),
@@ -74,11 +74,11 @@ def get_data_transform(approach_name, training):
                 ])
                 return data_transform
 
-            case "a7":
+            case "deep_block_model":
                 data_transform = transforms.Compose([transforms.ToTensor(),])
                 return data_transform
 
-            case "a8":
+            case "deep_block_augmented":
                 data_transform = data_transform = transforms.Compose([
                     transforms.RandomHorizontalFlip(),
                     transforms.RandomRotation(15),
@@ -96,28 +96,28 @@ def get_data_transform(approach_name, training):
 
 def get_batch_size(approach_name):
     match approach_name:
-        case "a1":
+        case "base_model":
             return 50
-        case "a2":
+        case "base_model_augmentations":
             return 50
-        case "a3":
+        case "lightweight_gap_model":
             return 10
-        case "a4":
+        case "avgpool_batchnorm_model":
             return 50
-        case "a5":
+        case "multiscale_kernel_model":
             return 50
-        case "a6":
+        case "multiscale_kernel_augmented":
             return 50
-        case "a7":
+        case "deep_block_model":
             return 50
-        case "a8":
+        case "deep_block_augmented":
             return 50
         case _:
             return "Not a valid approach"
 
 def create_model(approach_name, class_cnt):
     match approach_name:
-        case "a1":
+        case "base_model":
             # base
             return nn.Sequential(
                 # layer 1
@@ -145,7 +145,7 @@ def create_model(approach_name, class_cnt):
                 nn.Linear(256, class_cnt)
             )
 
-        case "a2":
+        case "base_model_augmentations":
             # add Horizontal flip and random rotation augmentation to base
             return nn.Sequential(
                 # layer 1
@@ -173,7 +173,7 @@ def create_model(approach_name, class_cnt):
                 nn.Linear(256, class_cnt)
             )
 
-        case "a3":
+        case "lightweight_gap_model":
             # Removed Fully connected layer and added batch norm and switched to leaky relu
             return nn.Sequential(
                 # Layer 1
@@ -195,7 +195,7 @@ def create_model(approach_name, class_cnt):
                 nn.Linear(64, class_cnt)
             )
 
-        case "a4":
+        case "avgpool_batchnorm_model":
             # Add batch norm, switched from maxpool to avgpool to base
             return nn.Sequential(
                 nn.Conv2d(3, 32, kernel_size=3, padding=1),
@@ -220,7 +220,7 @@ def create_model(approach_name, class_cnt):
                 nn.Linear(256, class_cnt)
             )
 
-        case "a5":
+        case "multiscale_kernel_model":
             # Add batch norm modifed kernel size in first 2 layers (7, 5, 3)
             return nn.Sequential(
                 nn.Conv2d(3, 32, kernel_size=7, padding=3),
@@ -247,7 +247,7 @@ def create_model(approach_name, class_cnt):
                 nn.Linear(256, class_cnt)
             )
             
-        case "a6":
+        case "multiscale_kernel_augmented":
             # Add batch norm modifed kernel size in first 2 layers (7, 5, 3)
             # Add data augmentation of random horz flip, random rotation, color jitter, and normalize
             return nn.Sequential(
@@ -276,7 +276,7 @@ def create_model(approach_name, class_cnt):
             )
 
 
-        case "a7":
+        case "deep_block_model":
             # GO LONG
             return nn.Sequential(
                 # Block 1
@@ -324,7 +324,7 @@ def create_model(approach_name, class_cnt):
                 nn.Linear(512, class_cnt)
             )
 
-        case "a8":
+        case "deep_block_augmented":
             # GO LONG
             # Add data augmentation of random horz flip, random rotation, and normalize
             return nn.Sequential(
