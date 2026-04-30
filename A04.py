@@ -12,21 +12,21 @@ def get_approach_names():
 def get_approach_description(approach_name):
     match approach_name:
         case "a1":
-            return "This is a 3 layer convution with a 4th layer fully connected layer."
+            return "Base 3 layer CNN with a 4th layer fully connected layer."
         case "a2":
-            return ""
+            return "Base 3 layer CNN with a 4th layer fully connected layer, uses data aguemtnations for random horizontal flips and rotations to the."
         case "a3":
-            return ""
+            return "Lightweight CNN using batch normalization, leaky ReLU, and global average pooling instead of fully connected layers."
         case "a4":
-            return ""
+            return "CNN with batch normalization and adaptive average pooling replacing max pooling."
         case "a5":
-            return ""
+            return "CNN with progressively smaller kernel sizes (7→5→3) and batch normalization."
         case "a6":
-            return ""
+            return "CNN with progressively smaller kernel sizes (7→5→3) and batch normalization, uses data augmentation such as flips, rotations, and color jitter"
         case "a7":
-            return ""
+            return "Deeper CNN with stacked convolutional blocks, batch normalization, and dropout."
         case "a8":
-            return ""
+            return "Deeper CNN with stacked convolutional blocks, batch normalization, and dropout, uses data augmentation for random horizontal flips, rotations, and normalization."
         case _:
             return "Not a valid approach"
 
